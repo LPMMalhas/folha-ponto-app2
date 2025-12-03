@@ -44,24 +44,27 @@
         } from 'https://esm.sh/lucide-react@0.294.0';
 
         // --- CONFIGURAÇÃO FIREBASE ---
-        // Tenta pegar a config do ambiente ou usa objeto vazio (fallback)
-        const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
-        const firebaseConfig = JSON.parse(firebaseConfigStr);
+        const firebaseConfig = {
+            apiKey: "AIzaSyDv87FD9oZI80G2ioM0PqHDalt2cwrQbIk",
+            authDomain: "controle-de-ponto-741c2.firebaseapp.com",
+            projectId: "controle-de-ponto-741c2",
+            storageBucket: "controle-de-ponto-741c2.firebasestorage.app",
+            messagingSenderId: "67388186352",
+            appId: "1:67388186352:web:0d71a4c2d441c794172c35"
+        };
 
         let db;
         let auth;
 
         try {
-            if (Object.keys(firebaseConfig).length > 0) {
-                const app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-            }
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
         } catch (e) {
-            console.warn("Firebase não configurado ou erro na inicialização.", e);
+            console.warn("Erro na inicialização do Firebase.", e);
         }
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app';
+        const appId = 'app-controle-ponto-v1';
 
         // --- CONFIGURAÇÕES PADRÃO ---
         const DEFAULT_CONFIG = {
@@ -135,10 +138,11 @@
             useEffect(() => {
                 if (!auth) return;
                 const initAuth = async () => {
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
+                    try {
+                        // Tenta login anônimo
                         await signInAnonymously(auth);
+                    } catch (error) {
+                        console.error("Erro na autenticação:", error);
                     }
                 };
                 initAuth();
@@ -476,8 +480,8 @@
             const headerClass = isExporting ? "bg-white text-black border-b-2 border-black p-4" : "bg-blue-900 text-white p-4 shadow-lg sticky top-0 z-10";
             const inputClass = isExporting ? "border-none bg-transparent text-black font-mono text-center w-full text-[10px]" : "w-full p-1 text-sm bg-slate-50 border border-slate-200 rounded text-center focus:ring-1 focus:ring-blue-500 focus:outline-none";
 
-            if (!auth) {
-                return <div className="flex h-screen items-center justify-center font-sans text-slate-600">Carregando Sistema...</div>;
+            if (!auth || !user) {
+                return <div className="flex h-screen items-center justify-center font-sans text-slate-600 animate-pulse">Carregando Sistema...</div>;
             }
 
             return (
