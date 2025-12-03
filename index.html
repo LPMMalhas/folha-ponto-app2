@@ -129,25 +129,26 @@ export default function App() {
     return onAuthStateChanged(auth, setUser);
   }, []);
 
-  // --- SINCRONIZAÇÃO DE DADOS (Path Corrigido: 'users/{uid}/data/{docName}') ---
+  // --- SINCRONIZAÇÃO DE DADOS ---
   useEffect(() => {
     if (!user || !db) return;
 
-    // Correção: Adicionado 'data' como subcoleção para garantir número par de segmentos (6)
-    // artifacts -> appId -> users -> uid -> data -> docName
+    // Estrutura: artifacts -> appId -> users -> uid -> data (collection) -> docName (doc)
     const recordsRef = doc(db, 'artifacts', appId, 'users', user.uid, 'data', 'records');
     const configRef = doc(db, 'artifacts', appId, 'users', user.uid, 'data', 'config');
     const financialsRef = doc(db, 'artifacts', appId, 'users', user.uid, 'data', 'financials');
 
     const unsubRecords = onSnapshot(recordsRef, (doc) => {
       if (doc.exists()) setRecords(doc.data());
-    });
+    }, (error) => console.error("Erro ao ler records:", error));
+
     const unsubConfig = onSnapshot(configRef, (doc) => {
       if (doc.exists()) setConfig({ ...DEFAULT_CONFIG, ...doc.data() });
-    });
+    }, (error) => console.error("Erro ao ler config:", error));
+
     const unsubFinancials = onSnapshot(financialsRef, (doc) => {
       if (doc.exists()) setFinancials(doc.data());
-    });
+    }, (error) => console.error("Erro ao ler financials:", error));
 
     return () => {
       unsubRecords();
@@ -156,11 +157,10 @@ export default function App() {
     };
   }, [user]);
 
-  // --- SALVAMENTO (Path Corrigido) ---
+  // --- SALVAMENTO ---
   const saveToFirebase = async (docName, data) => {
     if (!user || !db) return;
     try {
-      // Correção: Caminho deve ser idêntico ao do listener
       await setDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'data', docName), data);
     } catch (e) {
       console.error(`Erro ao salvar ${docName}:`, e);
