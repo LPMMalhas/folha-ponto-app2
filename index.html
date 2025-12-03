@@ -44,13 +44,12 @@
         
         // Imports do Firebase (Versão Modular via CDN)
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
         import { 
             getFirestore, 
             doc, 
             setDoc, 
-            onSnapshot,
-            collection 
+            onSnapshot
         } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
         // Imports Lucide React
@@ -60,9 +59,18 @@
             DollarSign, ToggleLeft, ToggleRight, PiggyBank, History, Calendar, Trash2, CheckCircle
         } from 'https://esm.sh/lucide-react@0.294.0';
 
-        // --- CONFIGURAÇÃO FIREBASE DO SISTEMA ---
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        // --- CONFIGURAÇÃO FIREBASE (PRODUÇÃO) ---
+        // Estas credenciais permitem que o app funcione em qualquer lugar (Github Pages, etc)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDv87FD9oZI80G2ioM0PqHDalt2cwrQbIk",
+            authDomain: "controle-de-ponto-741c2.firebaseapp.com",
+            projectId: "controle-de-ponto-741c2",
+            storageBucket: "controle-de-ponto-741c2.firebasestorage.app",
+            messagingSenderId: "67388186352",
+            appId: "1:67388186352:web:0d71a4c2d441c794172c35"
+        };
+
+        const appId = 'app-controle-ponto-v1';
 
         let db;
         let auth;
@@ -87,7 +95,7 @@
             defaultEndFri: "16:00",
             companyName: "Minha Empresa",
             employeeName: "Colaborador",
-            savedMonths: [] // Nova lista para rastrear histórico explicitamente
+            savedMonths: [] // Lista para rastrear histórico explicitamente
         };
 
         // --- FUNÇÕES UTILITÁRIAS ---
@@ -161,11 +169,7 @@
                 if (!auth) return;
                 const initAuth = async () => {
                     try {
-                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                            await signInWithCustomToken(auth, __initial_auth_token);
-                        } else {
-                            await signInAnonymously(auth);
-                        }
+                        await signInAnonymously(auth);
                     } catch (error) {
                         console.error("Erro na autenticação:", error);
                     }
